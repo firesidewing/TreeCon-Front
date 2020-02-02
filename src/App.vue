@@ -86,10 +86,10 @@ import Table from "./components/Table"
 
 const Api = {
   Base: "https://tree-con.herokuapp.com/api/v1/",
-  LatLong: "core/lat-longs",
-  Locations: "core/locations",
-  PlotData: "core/plot-datas",
-  Plots: "core/plot"
+  LatLong: "core/lat-longs/",
+  Locations: "core/locations/",
+  PlotData: "core/plot-datas/",
+  Plots: "core/plot/"
 };
 
 export default {
@@ -156,7 +156,7 @@ export default {
     GetLocations: function() {
       let v = this;      
       axios
-        .get(Api.Base + Api.Locations, v.Config)
+        .get(Api.Base + Api.Locations + "?format=json", v.Config)
         .then(function(response) {
           v.Locations = response.data.results;
         })
@@ -171,7 +171,7 @@ export default {
       if (v.Plots.length > 0) {
         v.Plots.forEach(Plot => {
           axios
-            .get(Api.Base + Api.PlotData + "?plot_key=" + Plot.id + "&ordering=id", v.Config)
+            .get(Api.Base + Api.PlotData + "?plot_key=" + Plot.id + "&ordering=id&format=json", v.Config)
             .then(function(response) {
               Plot["PlotData"] = response.data.results;
               v.Loading = false
@@ -194,7 +194,7 @@ export default {
       let v = this;
       v.Loading = true
       axios
-        .get(Api.Base + Api.Plots + "?location=" + v.SelectedLocation + "&ordering=id", v.Config)
+        .get(Api.Base + Api.Plots + "?location=" + v.SelectedLocation + "&ordering=id&format=json", v.Config)
         .then(function(response) {
           v.Plots = response.data.results;          
           v.GetPlotData()
