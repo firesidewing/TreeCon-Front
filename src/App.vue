@@ -9,10 +9,10 @@
           link 
           v-for="Plot in PlotList" 
           v-bind:key="Plot.PlotNumber">
-          <v-list-item-action>
+          <v-list-item-action @click="SelectPlot(Plot)">
             <v-icon>mdi-pine-tree</v-icon>
           </v-list-item-action>
-          <v-list-item-content @click="SelectedPlotData = Plot.PlotData; drawer = false">
+          <v-list-item-content @click="SelectPlot(Plot)">
             <v-list-item-title>Plot {{Plot.plot_number}}</v-list-item-title>
           </v-list-item-content>
           <v-btn 
@@ -65,6 +65,9 @@
               <Table 
                 v-if="SelectedPlotData" 
                 v-model="SelectedPlotData"
+                :Config="Config"
+                :Internet="Internet"
+                :PlotKey="SelectedPlot"
               ></Table>
             </v-fade-transition>            
           </v-col>
@@ -106,6 +109,7 @@ export default {
     LoggedOn: false,
     Locations: [],
     SelectedLocation: "",
+    SelectedPlot: '',
     SelectedPlotData: '',
     Plots: [
       {
@@ -204,8 +208,14 @@ export default {
           v.RetryLogin();
         });
     },
+    SelectPlot: function(Plot) {
+      this.SelectedPlotData = Plot.PlotData; 
+      this.SelectedPlot = Plot.id
+      this.drawer = false
+    },
     AddPlot: function() {
       let UnusedId = 1;
+      let v = this;
       let Used = this.Plots.reduce(function(o, v) {
           o[v['plot_number']] = true;
           return o;
@@ -213,17 +223,52 @@ export default {
       for (var i=1; Used[i]; i++){
         UnusedId = i <= 0 ? 1 : i + 1;
       }
-      this.Plots.push({
-        location: this.SelectedLocation,
-        plot_number: UnusedId,
-        PlotData: []
-      })
+      if(v.Internet){
+        axios.post(Api.Base + Api.Plots, {'location': v.SelectedLocation, 'plot_number': UnusedId}, v.Config)
+        .then(function(response) {
+          if(response.data.id){
+            v.Plots.push({
+              location: v.SelectedLocation,
+              plot_number: UnusedId,
+              PlotData: [],
+              id: response.data.id
+            })
+          }         
+          })
+          .catch(function(error) {
+            alert(error);
+            v.RetryLogin();
+          });
+      } else{
+        v.Plots.push({
+          location: v.SelectedLocation,
+          plot_number: UnusedId,
+          PlotData: [],
+        })
+      }
+      
     },
     DeletePlot: function(PlotNumber) {
       let v = this
-      v.Plots = v.Plots.filter(function( obj ) {
-        return obj.plot_number !== PlotNumber;
-      });
+     
+      if(v.Internet){
+        axios.delete(Api.Base + Api.Plots + v.Plots[v.Plots.findIndex(i => i.plot_number == PlotNumber)].id, v.Config)
+        .then(function(response) {
+          if(response.status == 204){
+            v.Plots = v.Plots.filter(function( obj ) {
+              return obj.plot_number !== PlotNumber;
+            });
+          }          
+        })
+        .catch(function(error) {
+          alert(error);
+          v.RetryLogin();
+        });
+      } else {
+         v.Plots = v.Plots.filter(function( obj ) {
+          return obj.plot_number !== PlotNumber;
+        });
+      }
     },
   }
 };

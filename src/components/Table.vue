@@ -65,9 +65,15 @@
 </template>
 
 <script>
+import axios from "axios";
 export default {
   name: "PlotTable",
-  props: ["value"],
+  props: [
+    "value", 
+    'Internet',
+    'Config',
+    'PlotKey'
+  ],
   data: () => ({
     snack: false,
     snackColor: "",
@@ -93,7 +99,9 @@ export default {
       this.snackText = "Canceled";
     },
     AddTree: function() {
-      let UnusedId = 1;
+      let v= this
+      
+      let UnusedId = 1;      
       let Used = this.value.reduce(function(o, v) {
           o[v['tree']] = true;
           return o;
@@ -101,14 +109,30 @@ export default {
       for (var i=1; Used[i]; i++){
         UnusedId = i <= 0 ? 1 : i + 1;
       }
-      this.value.push({
+      
+      let NewData = {
+        'plot_key': v.PlotKey,
         tree: UnusedId,
-        species: '',
+        species: 'PL',
         dbh: 0,
         height: 0,
         gross_piece_size: 0,
         net_piece_size: 0
-      })
+      }
+
+      if(v.Internet){
+        axios.post('https://tree-con.herokuapp.com/api/v1/core/plot-datas/', NewData, v.Config)
+        .then(function(response) {
+          if(response.data.id){
+            v.value.push(NewData)
+          }         
+          })
+          .catch(function(error) {
+            alert(error);
+          });
+      } else {
+        v.value.push(NewData)
+      }      
     }
   }
 };
