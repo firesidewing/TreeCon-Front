@@ -63,7 +63,7 @@
           <v-col>
             <v-fade-transition>
               <Table 
-                v-if="SelectedPlotData != ''" 
+                v-if="SelectedPlotData" 
                 v-model="SelectedPlotData"
               ></Table>
             </v-fade-transition>            
@@ -154,7 +154,7 @@ export default {
       this.Internet = type === "online";
     },
     GetLocations: function() {
-      let v = this;
+      let v = this;      
       axios
         .get(Api.Base + Api.Locations, v.Config)
         .then(function(response) {
@@ -167,6 +167,7 @@ export default {
     },
     GetPlotData: function() {
       let v = this;
+      v.SelectedPlotData = ''
       if (v.Plots.length > 0) {
         v.Plots.forEach(Plot => {
           axios
@@ -179,8 +180,9 @@ export default {
               alert(error);
               v.RetryLogin();
             });
-        });
-        
+        });        
+      } else {
+        v.Loading = false
       }
     },
     RetryLogin: function() {
