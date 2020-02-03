@@ -1,24 +1,3 @@
-# frontend
+# Tree-Con
 
-## Project setup
-```
-npm install
-```
-
-### Compiles and hot-reloads for development
-```
-npm run serve
-```
-
-### Compiles and minifies for production
-```
-npm run build
-```
-
-### Lints and fixes files
-```
-npm run lint
-```
-
-### Customize configuration
-See [Configuration Reference](https://cli.vuejs.org/config/).
+[![Netlify Status](https://api.netlify.com/api/v1/badges/4329a348-a795-4aca-8a39-a204834aeb12/deploy-status)](https://app.netlify.com/sites/tree-con/deploys)
