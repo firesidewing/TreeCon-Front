@@ -59,6 +59,56 @@
 
     <v-content>
       <v-container fluid>
+        <v-row v-if="SelectedLocation">
+          <v-col sm=2 md=2 lg=2>
+            <v-fade-transition>
+              <v-card>
+                <v-card-title>BAF</v-card-title>
+                <v-card-text class="headline">{{ BAF }}</v-card-text>
+              </v-card>
+            </v-fade-transition>
+          </v-col>
+          <v-col sm=2 md=2 lg=2 v-if="PlotStats">
+            <v-fade-transition>
+              <v-card>
+                <v-card-title>Slope</v-card-title>
+                <v-card-text class="headline">{{ PlotStats.slope }}%</v-card-text>
+              </v-card>
+            </v-fade-transition>
+          </v-col>
+          <v-col sm=2 md=2 lg=2 v-if="PlotStats">
+            <v-fade-transition>
+              <v-card>
+                <v-card-title>Alive</v-card-title>
+                <v-card-text class="headline">{{ PlotStats.alive_trees }}</v-card-text>
+              </v-card>
+            </v-fade-transition>
+          </v-col>
+          <v-col sm=2 md=2 lg=2 v-if="PlotStats">
+            <v-fade-transition>
+              <v-card>
+                <v-card-title>Dead</v-card-title>
+                <v-card-text class="headline">{{ PlotStats.dead_pine }}</v-card-text>
+              </v-card>
+            </v-fade-transition>
+          </v-col>
+          <v-col sm=2 md=2 lg=2 v-if="PlotStats">
+            <v-fade-transition>
+              <v-card>
+                <v-card-title>Type</v-card-title>
+                <v-card-text class="headline">{{ PlotStats.timber_type }}</v-card-text>
+              </v-card>
+            </v-fade-transition>
+          </v-col>
+          <v-col sm=2 md=2 lg=2 v-if="PlotStats">
+            <v-fade-transition>
+              <v-card>
+                <v-card-title>BD</v-card-title>
+                <v-card-text class="headline">{{ PlotStats.bd_percent }}%</v-card-text>
+              </v-card>
+            </v-fade-transition>
+          </v-col>
+        </v-row>
         <v-row>
           <v-col>
             <v-fade-transition>
@@ -68,6 +118,7 @@
                 :Config="Config"
                 :Internet="Internet"
                 :PlotKey="SelectedPlot"
+                :Species="Species"
               ></Table>
             </v-fade-transition>            
           </v-col>
@@ -92,7 +143,8 @@ const Api = {
   LatLong: "core/lat-longs/",
   Locations: "core/locations/",
   PlotData: "core/plot-datas/",
-  Plots: "core/plot/"
+  Plots: "core/plot/",
+  Species: "core/species"
 };
 
 export default {
@@ -108,17 +160,14 @@ export default {
     ShowOnline: true,
     LoggedOn: false,
     Locations: [],
-    SelectedLocation: "",
+    SelectedLocation: '',
+    Plots: [{}],
     SelectedPlot: '',
     SelectedPlotData: '',
-    Plots: [
-      {
-        PlotNumber: 1
-      }
-    ],
+    Species: {},    
     Config: {
       headers: {
-        Authorization: ``
+        Authorization: ''
       }
     }
   }),
@@ -150,6 +199,29 @@ export default {
   computed: {
     PlotList: function() {
       return this.Plots.slice(0).sort(function(a, b){return a.plot_number - b.plot_number})
+    },
+    BAF: function() {
+      return this.Locations.find(o => o.id === this.SelectedLocation).baf
+    },
+    PlotStats: function() {
+      if(this.SelectedPlot){
+        let obj = this.Plots.find(o => o.id === this.SelectedPlot)
+        return Object.fromEntries(
+          Object.entries(obj)
+          .filter(([key]) => [
+            'slope', 
+            'alive_trees', 
+            'dead_pine', 
+            'bd_percent', 
+            'gross_volume_ha', 
+            'net_volume_ha', 
+            'timber_type'
+            ].includes(key))
+        )
+      } else {
+        return null
+      }
+      
     }
   },
   methods: {
@@ -189,6 +261,18 @@ export default {
         v.Loading = false
       }
     },
+    GetSpecies: function() {
+      let v = this
+      axios
+        .get(Api.Base + Api.Species + "?format=json", v.Config)
+        .then(function(response) {
+          v.Species = response.data.results    
+        })
+        .catch(function(error) {
+          alert(error);
+          v.RetryLogin();
+        });
+    },
     RetryLogin: function() {
       let v = this;
       v.LoggedOn = false;
@@ -202,6 +286,7 @@ export default {
         .then(function(response) {
           v.Plots = response.data.results;          
           v.GetPlotData()
+          v.GetSpecies()
         })
         .catch(function(error) {
           alert(error);
@@ -223,16 +308,25 @@ export default {
       for (var i=1; Used[i]; i++){
         UnusedId = i <= 0 ? 1 : i + 1;
       }
+      let PlotOb = {
+        location: v.SelectedLocation,
+        plot_number: UnusedId,
+        PlotData: [],
+        "slope": 0,
+        "alive_trees": 0,
+        "dead_pine": 0,
+        "bd_percent": 0,
+        "gross_volume_ha": 0,
+        "net_volume_ha": 0,
+        "timber_type": "Pi/Sx"
+      }
+
       if(v.Internet){
-        axios.post(Api.Base + Api.Plots, {'location': v.SelectedLocation, 'plot_number': UnusedId}, v.Config)
+        axios.post(Api.Base + Api.Plots, PlotOb, v.Config)
         .then(function(response) {
           if(response.data.id){
-            v.Plots.push({
-              location: v.SelectedLocation,
-              plot_number: UnusedId,
-              PlotData: [],
-              id: response.data.id
-            })
+            PlotOb['id'] = response.data.id
+            v.Plots.push(PlotOb)
           }         
           })
           .catch(function(error) {
@@ -240,11 +334,7 @@ export default {
             v.RetryLogin();
           });
       } else{
-        v.Plots.push({
-          location: v.SelectedLocation,
-          plot_number: UnusedId,
-          PlotData: [],
-        })
+        v.Plots.push(PlotOb)
       }
       
     },
@@ -252,7 +342,8 @@ export default {
       let v = this
      
       if(v.Internet){
-        axios.delete(Api.Base + Api.Plots + v.Plots[v.Plots.findIndex(i => i.plot_number == PlotNumber)].id, v.Config)
+        let id = v.Plots.find(i => i.plot_number == PlotNumber).id
+        axios.delete(Api.Base + Api.Plots + id + '/', v.Config)
         .then(function(response) {
           if(response.status == 204){
             v.Plots = v.Plots.filter(function( obj ) {
