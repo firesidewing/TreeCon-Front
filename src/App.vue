@@ -258,7 +258,7 @@ export default {
     GetPlotData: function() {
       let v = this;
       v.SelectedPlotData = ''
-      if (v.Plots.length > 0) {
+      if (v.Plots.length > 0 && v.Plots[0].id) {
         v.Plots.forEach(Plot => {
           axios
             .get(Api.Base + Api.PlotData + "?plot_key=" + Plot.id + "&ordering=id&format=json", v.Config)
@@ -303,7 +303,8 @@ export default {
       axios
         .get(Api.Base + Api.Plots + "?location=" + v.SelectedLocation + "&ordering=id&format=json", v.Config)
         .then(function(response) {
-          v.$set(v.Plots, response.data.results);          
+          v.$set(v.Plots, response.data.results);    
+          alert(response.data.results)      
           v.GetPlotData()
           v.GetSpecies()
           v.$localStorage.set("LocalLocation", v.Locations.find(o => o.id === v.SelectedLocation))
