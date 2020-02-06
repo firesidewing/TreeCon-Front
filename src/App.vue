@@ -267,6 +267,7 @@ export default {
               v.Loading = false
             })
             .catch(function(error) {
+              alert(Api.Base + Api.PlotData + "?plot_key=" + Plot.id + "&ordering=id&format=json")
               alert(error);
               v.RetryLogin();
             });
@@ -285,6 +286,7 @@ export default {
           v.$localStorage.set("LocalSpecies", v.Species)   
         })
         .catch(function(error) {
+          alert(Api.Base + Api.Species + "?format=json");
           alert(error);
           v.RetryLogin();
         });
@@ -307,6 +309,7 @@ export default {
           v.$localStorage.set("LocalLocation", v.Locations.find(o => o.id === v.SelectedLocation))
         })
         .catch(function(error) {
+          alert(Api.Base + Api.Plots + "?location=" + v.SelectedLocation + "&ordering=id&format=json");
           alert(error);
           v.RetryLogin();
         });
