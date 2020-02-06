@@ -305,6 +305,7 @@ export default {
       axios
         .get(Api.Base + Api.Plots + "?location=" + v.SelectedLocation + "&ordering=id&format=json", v.Config)
         .then(function(response) {
+          v.Plots = response.data.results;
           v.$set(v.Plots, response.data.results);    
           alert(response.data.results[0].id)      
           v.GetPlotData()
