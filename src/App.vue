@@ -26,7 +26,7 @@
         
       </v-list>
       <template v-slot:append>
-        <div class="pa-2" v-if="SelectedLocation">
+        <div class="pa-2 my-5" v-if="SelectedLocation">
           <v-btn 
             block
             @click.stop="AddPlot"
@@ -41,17 +41,17 @@
       <v-toolbar-title>Tree - Con</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-autocomplete
-            v-model="SelectedLocation"
-            :items="Locations"
-            label="Location"
-            item-text="name"
-            item-value="id"
-            @change="LocationChange"
-            class="mt-3"
-            clearable
-            dense
-            hide-details
-          ></v-autocomplete>
+          v-model="SelectedLocation"
+          :items="Locations"
+          label="Location"
+          item-text="name"
+          item-value="id"
+          @change="LocationChange"
+          class="mt-3"
+          clearable
+          dense
+          hide-details
+        ></v-autocomplete>
     </v-app-bar>
 
     <v-overlay :value="Loading">
@@ -221,7 +221,8 @@ export default {
     PlotStats: function() {
       if(this.SelectedPlot){
         let obj = this.Plots.find(o => o.id === this.SelectedPlot)
-        return Object.fromEntries(
+        if(typeof obj === 'object' && obj !== null){
+          return Object.fromEntries(
           Object.entries(obj)
           .filter(([key]) => [
             'slope', 
@@ -232,7 +233,10 @@ export default {
             'net_volume_ha', 
             'timber_type'
             ].includes(key))
-        )
+          )
+        } else{
+          return null
+        }        
       } else {
         return null
       }
@@ -304,6 +308,7 @@ export default {
       axios
         .get(Api.Base + Api.Plots + "?location=" + v.SelectedLocation + "&ordering=id&format=json", v.Config)
         .then(function(response) {
+          v.SelectedPlot = '';
           v.Plots = response.data.results;
           v.$set(v.Plots, response.data.results);         
           v.GetPlotData()
