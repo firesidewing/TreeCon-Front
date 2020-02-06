@@ -41,16 +41,16 @@
       <v-toolbar-title>Tree - Con</v-toolbar-title>
       <v-spacer></v-spacer>
       <v-autocomplete
-        v-model="SelectedLocation"
-        :items="Locations"
-        label="Location"
-        item-text="name"
-        item-value="id"
-        @change="LocationChange"
-        class="mt-3"
-        clearable
-        dense
-      ></v-autocomplete>
+            v-model="SelectedLocation"
+            :items="Locations"
+            label="Location"
+            item-text="name"
+            item-value="id"
+            @change="LocationChange"
+            class="mt-3"
+            clearable
+            dense
+          ></v-autocomplete>
     </v-app-bar>
 
     <v-overlay :value="Loading">
@@ -60,51 +60,51 @@
     <v-content>
       <v-container fluid>
         <v-row v-if="SelectedLocation">
-          <v-col sm=2 md=2 lg=2>
+          <v-col sm=3 md=2 lg=2 v-if="SelectedLocation">
             <v-fade-transition>
               <v-card>
-                <v-card-title>BAF</v-card-title>
-                <v-card-text class="headline">{{ BAF }}</v-card-text>
+                <v-card-title class="text-no-wrap">BAF</v-card-title>
+                <v-card-text class="headline text-no-wrap">{{ BAF }}</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
-          <v-col sm=2 md=2 lg=2 v-if="PlotStats">
+          <v-col sm=3 md=2 lg=2 v-if="PlotStats">
             <v-fade-transition>
               <v-card>
-                <v-card-title>Slope</v-card-title>
-                <v-card-text class="headline">{{ PlotStats.slope }}%</v-card-text>
+                <v-card-title class="text-no-wrap">Slope</v-card-title>
+                <v-card-text class="headline text-no-wrap">{{ PlotStats.slope }}%</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
-          <v-col sm=2 md=2 lg=2 v-if="PlotStats">
+          <v-col sm=3 md=2 lg=2 v-if="PlotStats">
             <v-fade-transition>
               <v-card>
-                <v-card-title>Alive</v-card-title>
-                <v-card-text class="headline">{{ PlotStats.alive_trees }}</v-card-text>
+                <v-card-title class="text-no-wrap">Alive</v-card-title>
+                <v-card-text class="headline text-no-wrap">{{ PlotStats.alive_trees }}</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
-          <v-col sm=2 md=2 lg=2 v-if="PlotStats">
+          <v-col sm=3 md=2 lg=2 v-if="PlotStats">
             <v-fade-transition>
               <v-card>
-                <v-card-title>Dead</v-card-title>
-                <v-card-text class="headline">{{ PlotStats.dead_pine }}</v-card-text>
+                <v-card-title class="text-no-wrap">Dead</v-card-title>
+                <v-card-text class="headline text-no-wrap">{{ PlotStats.dead_pine }}</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
-          <v-col sm=2 md=2 lg=2 v-if="PlotStats">
+          <v-col sm=3 md=2 lg=2 v-if="PlotStats">
             <v-fade-transition>
               <v-card>
-                <v-card-title>Type</v-card-title>
-                <v-card-text class="headline">{{ PlotStats.timber_type }}</v-card-text>
+                <v-card-title class="text-no-wrap">Type</v-card-title>
+                <v-card-text class="headline text-no-wrap">{{ PlotStats.timber_type }}</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
-          <v-col sm=2 md=2 lg=2 v-if="PlotStats">
+          <v-col sm=3 md=2 lg=2 v-if="PlotStats">
             <v-fade-transition>
               <v-card>
-                <v-card-title>BD</v-card-title>
-                <v-card-text class="headline">{{ PlotStats.bd_percent }}%</v-card-text>
+                <v-card-title class="text-no-wrap">BD</v-card-title>
+                <v-card-text class="headline text-no-wrap">{{ PlotStats.bd_percent }}%</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
@@ -171,14 +171,22 @@ export default {
       }
     }
   }),
+  localStorage: {
+    LocalPlots: {
+      type: Array
+    },
+    LocalSpecies: {
+      type: Object
+    },
+    LocalLocation: {
+      type: Object
+    },
+  },
   created() {},
   mounted() {
     window.addEventListener("online", this.UpdateOnlineStatus);
     window.addEventListener("offline", this.UpdateOnlineStatus);
-    if (localStorage.TokenConfig != "undefined") {
-      this.Config = this.$localStorage.get("TokenConfig");
-      this.LoggedOn = true;
-    }
+    this.CheckLocal(); 
   },
   watch: {
     Internet(v) {
@@ -198,10 +206,16 @@ export default {
   },
   computed: {
     PlotList: function() {
-      return this.Plots.slice(0).sort(function(a, b){return a.plot_number - b.plot_number})
+      let Sorted = this.Plots.slice(0).sort(function(a, b){return a.plot_number - b.plot_number})
+      this.$localStorage.set("LocalPlots", Sorted)
+      return Sorted
     },
     BAF: function() {
-      return this.Locations.find(o => o.id === this.SelectedLocation).baf
+      if(this.SelectedLocation && this.Internet){
+        return this.Locations.find(o => o.id === this.SelectedLocation).baf
+      } else{
+        return this.Locations.baf;
+      }      
     },
     PlotStats: function() {
       if(this.SelectedPlot){
@@ -249,14 +263,15 @@ export default {
           axios
             .get(Api.Base + Api.PlotData + "?plot_key=" + Plot.id + "&ordering=id&format=json", v.Config)
             .then(function(response) {
-              Plot["PlotData"] = response.data.results;
+              v.$set(Plot, "PlotData", response.data.results);
               v.Loading = false
             })
             .catch(function(error) {
               alert(error);
               v.RetryLogin();
             });
-        });        
+        });
+        v.$localStorage.set("LocalPlots", v.Plots)     
       } else {
         v.Loading = false
       }
@@ -266,7 +281,8 @@ export default {
       axios
         .get(Api.Base + Api.Species + "?format=json", v.Config)
         .then(function(response) {
-          v.Species = response.data.results    
+          v.Species = response.data.results
+          v.$localStorage.set("LocalSpecies", v.Species)   
         })
         .catch(function(error) {
           alert(error);
@@ -280,13 +296,15 @@ export default {
     },
     LocationChange: function() {
       let v = this;
+      if(!v.SelectedLocation) { return; }
       v.Loading = true
       axios
         .get(Api.Base + Api.Plots + "?location=" + v.SelectedLocation + "&ordering=id&format=json", v.Config)
         .then(function(response) {
-          v.Plots = response.data.results;          
+          v.$set(v.Plots, response.data.results);          
           v.GetPlotData()
           v.GetSpecies()
+          v.$localStorage.set("LocalLocation", v.Locations.find(o => o.id === v.SelectedLocation))
         })
         .catch(function(error) {
           alert(error);
@@ -361,6 +379,22 @@ export default {
         });
       }
     },
+    CheckLocal: function() {
+      if (localStorage.TokenConfig != "undefined") {
+        this.Config = this.$localStorage.get("TokenConfig");
+        this.LoggedOn = true;
+      }
+      if (localStorage.LocalPlots != "undefined") {
+        this.Plots = this.$localStorage.get("LocalPlots");
+      }
+      if (localStorage.LocalSpecies != "undefined") {
+        this.Species = this.$localStorage.get("LocalSpecies");
+      }
+      if (localStorage.LocalLocation != "undefined" && !this.Internet) {
+        this.Locations = this.$localStorage.get("LocalLocation");
+        this.SelectedLocation = this.$localStorage.get("LocalLocation").id;
+      }
+    }
   }
 };
 </script>

@@ -4,6 +4,9 @@ module.exports = {
   ],
 
   pwa: {
-    name: 'TreeCon'
+    name: 'TreeCon',
+    workboxOptions: {
+      skipWaiting: true
+    }
   }
 }
