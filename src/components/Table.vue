@@ -42,6 +42,7 @@
                 v-model="props.item.dbh"
                 label="DBH"               
                 single-line
+                autofocus
               ></v-text-field>
             </template>
           </v-edit-dialog>
@@ -57,6 +58,7 @@
                 v-model="props.item.height"
                 label="Height"               
                 single-line
+                autofocus
               ></v-text-field>
             </template>
           </v-edit-dialog>
@@ -72,6 +74,7 @@
                 v-model="props.item.gross_piece_size"
                 label="Gross PS"               
                 single-line
+                autofocus
               ></v-text-field>
             </template>
           </v-edit-dialog>
@@ -87,6 +90,7 @@
                 v-model="props.item.net_piece_size"
                 label="Net PS"               
                 single-line
+                autofocus
               ></v-text-field>
             </template>
           </v-edit-dialog>

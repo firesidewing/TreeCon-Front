@@ -50,6 +50,7 @@
             class="mt-3"
             clearable
             dense
+            hide-details
           ></v-autocomplete>
     </v-app-bar>
 
@@ -260,8 +261,7 @@ export default {
       v.SelectedPlotData = ''
       if (v.Plots.length > 0 && v.Plots[0].id) {        
         v.Plots.forEach(Plot => {
-          alert(JSON.stringify(Plot))
-;          axios
+          axios
             .get(Api.Base + Api.PlotData + "?plot_key=" + Plot.id + "&ordering=id&format=json", v.Config)
             .then(function(response) {
               Plot["PlotData"] = response.data.results;
@@ -288,7 +288,6 @@ export default {
           v.$localStorage.set("LocalSpecies", v.Species)   
         })
         .catch(function(error) {
-          alert(Api.Base + Api.Species + "?format=json");
           alert(error);
           v.RetryLogin();
         });
@@ -306,14 +305,12 @@ export default {
         .get(Api.Base + Api.Plots + "?location=" + v.SelectedLocation + "&ordering=id&format=json", v.Config)
         .then(function(response) {
           v.Plots = response.data.results;
-          v.$set(v.Plots, response.data.results);    
-          alert(response.data.results[0].id)      
+          v.$set(v.Plots, response.data.results);         
           v.GetPlotData()
           v.GetSpecies()
           v.$localStorage.set("LocalLocation", v.Locations.find(o => o.id === v.SelectedLocation))
         })
         .catch(function(error) {
-          alert(Api.Base + Api.Plots + "?location=" + v.SelectedLocation + "&ordering=id&format=json");
           alert(error);
           v.RetryLogin();
         });
