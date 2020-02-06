@@ -264,8 +264,8 @@ export default {
 ;          axios
             .get(Api.Base + Api.PlotData + "?plot_key=" + Plot.id + "&ordering=id&format=json", v.Config)
             .then(function(response) {
-              v.$set(Plot, "PlotData", response.data.results);
-              v.Loading = false
+              Plot["PlotData"] = response.data.results;
+              v.$set(Plot, "PlotData", response.data.results);              
             })
             .catch(function(error) {
               alert(Api.Base + Api.PlotData + "?plot_key=" + Plot.id + "&ordering=id&format=json")
@@ -273,7 +273,8 @@ export default {
               v.RetryLogin();
             });
         });
-        v.$localStorage.set("LocalPlots", v.Plots)     
+        v.$localStorage.set("LocalPlots", v.Plots)   
+        v.Loading = false  
       } else {
         v.Loading = false
       }
