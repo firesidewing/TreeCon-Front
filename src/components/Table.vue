@@ -16,7 +16,8 @@
         
         <template v-slot:item.tree_species="props">
           <v-edit-dialog 
-            @save="save(props.item)" 
+            @save="save(props.item)"
+            @close="save(props.item)"
             @cancel="cancel">
             {{ Species[props.item.tree_species -1].species_name }}
             <template v-slot:input>
@@ -32,9 +33,26 @@
           </v-edit-dialog>
         </template>
 
+        <template v-slot:item.blowdown="props">
+          <v-edit-dialog 
+            @save="save(props.item)"
+            @close="save(props.item)"
+            @cancel="cancel">
+            {{ props.item.blowdown ? "Yes": "No" }}
+            <template v-slot:input>
+              <v-checkbox
+                v-model="props.item.blowdown"
+                :label="Blowdown"
+                color="success"
+              ></v-checkbox>
+            </template>
+          </v-edit-dialog>
+        </template>
+
         <template v-slot:item.dbh="props">
           <v-edit-dialog 
-            @save="save(props.item)" 
+            @save="save(props.item)"
+            @close="save(props.item)"
             @cancel="cancel">
             {{ props.item.dbh }}
             <template v-slot:input>
@@ -50,7 +68,8 @@
 
         <template v-slot:item.height="props">
           <v-edit-dialog 
-            @save="save(props.item)" 
+            @save="save(props.item)"
+            @close="save(props.item)" 
             @cancel="cancel">
             {{ props.item.height }}
             <template v-slot:input>
@@ -66,7 +85,8 @@
 
         <template v-slot:item.gross_piece_size="props">
           <v-edit-dialog 
-            @save="save(props.item)" 
+            @save="save(props.item)"
+            @close="save(props.item)"
             @cancel="cancel">
             {{ props.item.gross_piece_size }}
             <template v-slot:input>
@@ -82,7 +102,8 @@
 
         <template v-slot:item.net_piece_size="props">
           <v-edit-dialog 
-            @save="save(props.item)" 
+            @save="save(props.item)"
+            @close="save(props.item)"
             @cancel="cancel">
             {{ props.item.net_piece_size }}
             <template v-slot:input>
@@ -104,7 +125,7 @@
         @click="AddTree"
       >Add Tree</v-btn>
 
-      <v-snackbar v-model="snack" :timeout="3000" :color="snackColor">
+      <v-snackbar v-model="snack" :timeout="2000" :color="snackColor">
         {{ snackText }}
         <v-btn text @click="snack = false">Close</v-btn>
       </v-snackbar>
@@ -126,6 +147,7 @@ export default {
       { text: 'Actions', value: 'action', sortable: false },
       { text: "Tree", value: "tree" },
       { text: "Species", value: "tree_species" },
+      { text: "BD", value: "blowdown" },
       { text: "DBH", value: "dbh" },
       { text: "Height", value: "height" },
       { text: "Gross PS", value: "gross_piece_size" },
@@ -137,7 +159,7 @@ export default {
       this.snack = true;
       this.snackColor = "success";
       this.snackText = "Data saved";
-      this.SaveTreeData(Changed)        
+      this.UpdateTreeData(Changed)        
     },
     cancel: function() {
       this.snack = true;
@@ -163,35 +185,46 @@ export default {
         dbh: 0,
         height: 0,
         gross_piece_size: 0,
-        net_piece_size: 0
+        net_piece_size: 0,
+        blowdown: false
       };
 
       if (v.Internet) {
-        v.SaveTreeData(NewData)
-        v.value.push(NewData)        
+        axios
+          .post(
+            "https://tree-con.herokuapp.com/api/v1/core/plot-datas/",
+            NewData,
+            v.Config
+          )
+          .then(function(response) {
+            if (response.data.id) {
+              NewData['id'] =  response.data.id;
+              v.value.push(NewData);
+            }
+          })
+          .catch(function(error) {
+            alert(error);
+            return null;
+          });                
       } else {
         v.value.push(NewData);
       }
     },
     DeleteTree: function(item) {
       let v = this
-      const index = v.value.indexOf(item)
-      v.value.splice(index, 1)
+      const index = v.value.indexOf(item)      
 
       axios.delete("https://tree-con.herokuapp.com/api/v1/core/plot-datas/" + item.id + '/', v.Config)
         .then(function(response) {
           if(response.status == 204){
-            v.value = v.value.filter(function( obj ) {
-              return obj.id !== item.id;
-            });
+            v.value.splice(index, 1)
           }          
         })
         .catch(function(error) {
           alert(error);
-          v.RetryLogin();
         });
     },
-    SaveTreeData: function(data) {
+    UpdateTreeData: function(data) {
       let v = this
       axios
         .post(
@@ -206,6 +239,7 @@ export default {
         })
         .catch(function(error) {
           alert(error);
+          return null;
         });
     }
   }

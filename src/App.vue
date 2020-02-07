@@ -51,6 +51,7 @@
           clearable
           dense
           hide-details
+          return-object
         ></v-autocomplete>
     </v-app-bar>
 
@@ -63,49 +64,65 @@
         <v-row v-if="SelectedLocation">
           <v-col sm=3 md=2 lg=2 v-if="SelectedLocation">
             <v-fade-transition>
-              <v-card>
+              <v-card dark color="success">
                 <v-card-title class="text-no-wrap">BAF</v-card-title>
-                <v-card-text class="headline text-no-wrap">{{ BAF }}</v-card-text>
+                <v-card-text class="headline text-no-wrap">{{ SelectedLocation.baf }}</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
-          <v-col sm=3 md=2 lg=2 v-if="PlotStats">
+          <v-col sm=3 md=2 lg=2 v-if="SelectedPlot">
             <v-fade-transition>
               <v-card>
                 <v-card-title class="text-no-wrap">Slope</v-card-title>
-                <v-card-text class="headline text-no-wrap">{{ PlotStats.slope }}%</v-card-text>
+                <v-card-text class="headline text-no-wrap">{{ SelectedPlot.slope }}%</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
-          <v-col sm=3 md=2 lg=2 v-if="PlotStats">
+          <v-col sm=3 md=2 lg=2 v-if="AliveTrees != null">
             <v-fade-transition>
               <v-card>
                 <v-card-title class="text-no-wrap">Alive</v-card-title>
-                <v-card-text class="headline text-no-wrap">{{ PlotStats.alive_trees }}</v-card-text>
+                <v-card-text class="headline text-no-wrap">{{ AliveTrees }}</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
-          <v-col sm=3 md=2 lg=2 v-if="PlotStats">
+          <v-col sm=3 md=2 lg=2 v-if="DeadPine != null">
             <v-fade-transition>
               <v-card>
                 <v-card-title class="text-no-wrap">Dead</v-card-title>
-                <v-card-text class="headline text-no-wrap">{{ PlotStats.dead_pine }}</v-card-text>
+                <v-card-text class="headline text-no-wrap">{{ DeadPine }}</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
-          <v-col sm=3 md=2 lg=2 v-if="PlotStats">
+          <v-col sm=3 md=2 lg=2 v-if="SelectedPlot">
             <v-fade-transition>
               <v-card>
                 <v-card-title class="text-no-wrap">Type</v-card-title>
-                <v-card-text class="headline text-no-wrap">{{ PlotStats.timber_type }}</v-card-text>
+                <v-card-text class="headline text-no-wrap">{{ SelectedPlot.timber_type }}</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
-          <v-col sm=3 md=2 lg=2 v-if="PlotStats">
+          <v-col sm=3 md=2 lg=2 v-if="BDPercent != null">
             <v-fade-transition>
               <v-card>
                 <v-card-title class="text-no-wrap">BD</v-card-title>
-                <v-card-text class="headline text-no-wrap">{{ PlotStats.bd_percent }}%</v-card-text>
+                <v-card-text class="headline text-no-wrap">{{ BDPercent }}%</v-card-text>
+              </v-card>
+            </v-fade-transition>
+          </v-col>
+          <v-col sm=3 md=2 lg=2 v-if="AvgDBH != null">
+            <v-fade-transition>
+              <v-card>
+                <v-card-title class="text-no-wrap">Avg DBH</v-card-title>
+                <v-card-text class="headline text-no-wrap">{{ AvgDBH }}</v-card-text>
+              </v-card>
+            </v-fade-transition>
+          </v-col>
+          <v-col sm=3 md=2 lg=2 v-if="AvgHeight != null">
+            <v-fade-transition>
+              <v-card>
+                <v-card-title class="text-no-wrap">Avg Height</v-card-title>
+                <v-card-text class="headline text-no-wrap">{{ AvgHeight }}</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
@@ -118,7 +135,7 @@
                 v-model="SelectedPlotData"
                 :Config="Config"
                 :Internet="Internet"
-                :PlotKey="SelectedPlot"
+                :PlotKey="SelectedPlot.id"
                 :Species="Species"
               ></Table>
             </v-fade-transition>            
@@ -211,36 +228,48 @@ export default {
       this.$localStorage.set("LocalPlots", Sorted)
       return Sorted
     },
-    BAF: function() {
-      if(this.SelectedLocation && this.Internet){
-        return this.Locations.find(o => o.id === this.SelectedLocation).baf
-      } else{
-        return this.Locations.baf;
-      }      
+    AliveTrees: function() {
+      if (this.SelectedPlotData && this.SelectedPlotData.length > 0){
+        return this.SelectedPlotData.filter(val => {
+          return val.tree_species != 1;
+        }).length
+      } else {
+        return null;
+      }
     },
-    PlotStats: function() {
-      if(this.SelectedPlot){
-        let obj = this.Plots.find(o => o.id === this.SelectedPlot)
-        if(typeof obj === 'object' && obj !== null){
-          return Object.fromEntries(
-          Object.entries(obj)
-          .filter(([key]) => [
-            'slope', 
-            'alive_trees', 
-            'dead_pine', 
-            'bd_percent', 
-            'gross_volume_ha', 
-            'net_volume_ha', 
-            'timber_type'
-            ].includes(key))
-          )
-        } else{
-          return null
-        }        
+    DeadPine: function() {
+      if(this.SelectedPlotData && this.SelectedPlotData.length > 0){
+        return this.SelectedPlotData.length - this.AliveTrees;
       } else {
         return null
       }
-      
+    },
+    BDPercent: function() {
+      if(this.SelectedPlotData && this.SelectedPlotData.length > 0){
+        return ((this.SelectedPlotData.filter(val => {
+          return val.blowdown
+        }).length / this.SelectedPlotData.length) * 100).toFixed(2)
+      } else{
+        return null
+      }
+    },
+    AvgDBH: function() {
+      if(this.SelectedPlotData && this.SelectedPlotData.length > 0){
+        return (this.SelectedPlotData.reduce(function (prev, cur) {
+          return prev + Number(cur.dbh);
+        }, 0) / this.SelectedPlotData.length).toFixed(2)
+      } else {
+        return null
+      }
+    },
+    AvgHeight: function() {
+      if(this.SelectedPlotData && this.SelectedPlotData.length > 0){
+        return (this.SelectedPlotData.reduce(function (prev, cur) {
+          return prev + Number(cur.height);
+        }, 0) / this.SelectedPlotData.length).toFixed(2)
+      } else {
+        return null
+      }
     }
   },
   methods: {
@@ -306,7 +335,7 @@ export default {
       if(!v.SelectedLocation) { return; }
       v.Loading = true
       axios
-        .get(Api.Base + Api.Plots + "?location=" + v.SelectedLocation + "&ordering=id&format=json", v.Config)
+        .get(Api.Base + Api.Plots + "?location=" + v.SelectedLocation.id + "&ordering=id&format=json", v.Config)
         .then(function(response) {
           v.SelectedPlot = '';
           v.Plots = response.data.results;
@@ -322,7 +351,7 @@ export default {
     },
     SelectPlot: function(Plot) {
       this.SelectedPlotData = Plot.PlotData; 
-      this.SelectedPlot = Plot.id
+      this.SelectedPlot = Plot;
       this.drawer = false
     },
     AddPlot: function() {
@@ -340,9 +369,6 @@ export default {
         plot_number: UnusedId,
         PlotData: [],
         "slope": 0,
-        "alive_trees": 0,
-        "dead_pine": 0,
-        "bd_percent": 0,
         "gross_volume_ha": 0,
         "net_volume_ha": 0,
         "timber_type": "Pi/Sx"
