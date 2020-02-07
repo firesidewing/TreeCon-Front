@@ -64,9 +64,16 @@
         <v-row v-if="SelectedLocation">
           <v-col sm=3 md=2 lg=2 v-if="SelectedLocation">
             <v-fade-transition>
-              <v-card dark color="success">
+              <v-card>
                 <v-card-title class="text-no-wrap">BAF</v-card-title>
-                <v-card-text class="headline text-no-wrap">{{ SelectedLocation.baf }}</v-card-text>
+                <v-card-text>
+                  <v-text-field
+                      v-model="SelectedLocation.baf"
+                      single-line
+                      dense
+                      hide-details
+                    ></v-text-field>
+                  </v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
@@ -74,7 +81,16 @@
             <v-fade-transition>
               <v-card>
                 <v-card-title class="text-no-wrap">Slope</v-card-title>
-                <v-card-text class="headline text-no-wrap">{{ SelectedPlot.slope }}%</v-card-text>
+                <v-card-text>
+                  <v-select
+                      v-model="SelectedPlot.slope"
+                      :items="SelectionArray"
+                      single-line
+                      dense
+                      hide-details
+                      append-icon="mdi-percent-outline"
+                    ></v-select>
+                </v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
@@ -174,6 +190,7 @@ export default {
   data: () => ({
     drawer: false,
     Loading: false,
+    SelectionArray: [0, 5, 10, 15, 20],
     Internet: navigator.onLine,
     ShowOnline: true,
     LoggedOn: false,
