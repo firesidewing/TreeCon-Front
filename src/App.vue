@@ -359,7 +359,7 @@ export default {
           v.$set(v.Plots, response.data.results);         
           v.GetPlotData()
           v.GetSpecies()
-          v.$localStorage.set("LocalLocation", v.Locations.find(o => o.id === v.SelectedLocation))
+          v.$localStorage.set("LocalLocation", v.SelectedLocation)
         })
         .catch(function(error) {
           alert(error);
@@ -382,7 +382,7 @@ export default {
         UnusedId = i <= 0 ? 1 : i + 1;
       }
       let PlotOb = {
-        location: v.SelectedLocation,
+        location: v.SelectedLocation.id,
         plot_number: UnusedId,
         PlotData: [],
         "slope": 0,
@@ -444,7 +444,7 @@ export default {
       }
       if (localStorage.LocalLocation != "undefined" && !this.Internet) {
         this.Locations = this.$localStorage.get("LocalLocation");
-        this.SelectedLocation = this.$localStorage.get("LocalLocation").id;
+        this.SelectedLocation = this.$localStorage.get("LocalLocation");
       }
     }
   }
