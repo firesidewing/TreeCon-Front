@@ -39,7 +39,9 @@
         dense
         hide-details
         return-object
-      ></v-autocomplete>
+      >
+        <template slot="selection" slot-scope="data">{{ data.item.name }} - {{ data.item.bec_zone }}</template>
+      </v-autocomplete>
     </v-app-bar>
 
     <v-overlay :value="Loading">
@@ -336,7 +338,14 @@ export default {
     GetSpecies: function() {
       let v = this;
       axios
-        .get(Api.Base + Api.Species + "?format=json", v.Config)
+        .get(
+          Api.Base +
+            Api.Species +
+            "?bec=" +
+            v.SelectedLocation.bec_zone +
+            "&format=json",
+          v.Config
+        )
         .then(function(response) {
           v.Species = response.data;
           v.$localStorage.set("LocalSpecies", v.Species);

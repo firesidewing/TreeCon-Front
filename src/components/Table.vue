@@ -8,7 +8,7 @@
 
         <template v-slot:item.tree_species="props">
           <v-edit-dialog @save="save(props.item)" @close="save(props.item)" @cancel="cancel">
-            {{ SpeciesList.find(e => e.id == props.item.tree_species).species_name }}
+            {{ Species.find(e => e.id == props.item.tree_species) ? Species.find(e => e.id == props.item.tree_species).species_name : '' }}
             <template
               v-slot:input
             >
@@ -68,6 +68,7 @@ export default {
   name: "PlotTable",
   props: ["value", "Internet", "Config", "PlotKey", "Species"],
   data: () => ({
+    SelectedSpecies: null,
     snack: false,
     snackColor: "",
     snackText: "",
@@ -145,11 +146,11 @@ export default {
       let NewData = {
         plot_key: v.PlotKey,
         tree: UnusedId,
-        tree_species: 140,
+        tree_species: v.SpeciesList[0].id,
         dbh: 0,
         height: 0,
-        gross_piece_size: 0,
-        net_piece_size: 0,
+        gross_piece_size: 0.000,
+        net_piece_size: 0.000,
         blowdown: false
       };
 
