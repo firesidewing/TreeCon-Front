@@ -86,27 +86,11 @@
               </v-card>
             </v-fade-transition>
           </v-col>
-          <v-col sm="3" md="2" lg="2" v-if="DeadPine != null">
+          <v-col sm="3" md="2" lg="2" v-if="DeadTrees != null">
             <v-fade-transition>
               <v-card>
                 <v-card-title class="text-no-wrap">Dead</v-card-title>
-                <v-card-text class="headline text-no-wrap">{{ DeadPine }}</v-card-text>
-              </v-card>
-            </v-fade-transition>
-          </v-col>
-          <v-col sm="3" md="2" lg="2" v-if="SelectedPlot">
-            <v-fade-transition>
-              <v-card>
-                <v-card-title class="text-no-wrap">Type</v-card-title>
-                <v-card-text class="headline text-no-wrap">{{ SelectedPlot.timber_type }}</v-card-text>
-              </v-card>
-            </v-fade-transition>
-          </v-col>
-          <v-col sm="3" md="2" lg="2" v-if="BDPercent != null">
-            <v-fade-transition>
-              <v-card>
-                <v-card-title class="text-no-wrap">BD</v-card-title>
-                <v-card-text class="headline text-no-wrap">{{ BDPercent }}%</v-card-text>
+                <v-card-text class="headline text-no-wrap">{{ DeadTrees }}</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
@@ -123,6 +107,22 @@
               <v-card>
                 <v-card-title class="text-no-wrap">Avg Height</v-card-title>
                 <v-card-text class="headline text-no-wrap">{{ AvgHeight }}</v-card-text>
+              </v-card>
+            </v-fade-transition>
+          </v-col>
+          <v-col sm="3" md="2" lg="2" v-if="AvgMerchVol">
+            <v-fade-transition>
+              <v-card>
+                <v-card-title class="text-no-wrap">Avg Merch</v-card-title>
+                <v-card-text class="headline text-no-wrap">{{ AvgMerchVol }}</v-card-text>
+              </v-card>
+            </v-fade-transition>
+          </v-col>
+          <v-col sm="3" md="2" lg="2" v-if="AvgTotalVol">
+            <v-fade-transition>
+              <v-card>
+                <v-card-title class="text-no-wrap">Avg Vol</v-card-title>
+                <v-card-text class="headline text-no-wrap">{{ AvgTotalVol }}</v-card-text>
               </v-card>
             </v-fade-transition>
           </v-col>
@@ -239,7 +239,7 @@ export default {
         return null;
       }
     },
-    DeadPine: function() {
+    DeadTrees: function() {
       if (this.SelectedPlotData && this.SelectedPlotData.length > 0) {
         return this.SelectedPlotData.length - this.AliveTrees;
       } else {
@@ -277,6 +277,28 @@ export default {
             return prev + Number(cur.height);
           }, 0) / this.SelectedPlotData.length
         ).toFixed(2);
+      } else {
+        return null;
+      }
+    },
+    AvgMerchVol: function() {
+      if (this.SelectedPlotData && this.SelectedPlotData.length > 0) {
+        return (
+          this.SelectedPlotData.reduce(function(prev, cur) {
+            return prev + Number(cur.net_piece_size);
+          }, 0) / this.SelectedPlotData.length
+        ).toFixed(4);
+      } else {
+        return null;
+      }
+    },
+    AvgTotalVol: function() {
+      if (this.SelectedPlotData && this.SelectedPlotData.length > 0) {
+        return (
+          this.SelectedPlotData.reduce(function(prev, cur) {
+            return prev + Number(cur.gross_piece_size);
+          }, 0) / this.SelectedPlotData.length
+        ).toFixed(4);
       } else {
         return null;
       }

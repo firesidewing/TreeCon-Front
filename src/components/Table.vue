@@ -79,8 +79,8 @@ export default {
       { text: "BD", value: "blowdown" },
       { text: "DBH", value: "dbh" },
       { text: "Height", value: "height" },
-      { text: "Gross PS", value: "gross_piece_size" },
-      { text: "Net PS", value: "net_piece_size" }
+      { text: "Merch m^3", value: "net_piece_size" },
+      { text: "Total m^3", value: "gross_piece_size" }
     ]
   }),
   computed: {
@@ -149,8 +149,8 @@ export default {
         tree_species: v.SpeciesList[0].id,
         dbh: 0,
         height: 0,
-        gross_piece_size: 0.000,
-        net_piece_size: 0.000,
+        gross_piece_size: 0.0,
+        net_piece_size: 0.0,
         blowdown: false
       };
 
