@@ -15,6 +15,14 @@
             <v-icon>mdi-delete</v-icon>
           </v-btn>
         </v-list-item>
+        <v-list-item link class="my-5">
+          <v-list-item-action @click="ShowSummary">
+            <v-icon>mdi-view-dashboard</v-icon>
+          </v-list-item-action>
+          <v-list-item-content @click="ShowSummary">
+            <v-list-item-title>Summary</v-list-item-title>
+          </v-list-item-content>
+        </v-list-item>
       </v-list>
       <template v-slot:append>
         <div class="pa-2 my-5" v-if="SelectedLocation">
@@ -51,7 +59,7 @@
     <v-content>
       <v-container fluid>
         <v-row v-if="SelectedLocation">
-          <v-col sm="3" md="2" lg="2" v-if="SelectedLocation">
+          <v-col sm="3" md="2" lg="2" v-if="SelectedLocation && !Summary">
             <v-fade-transition>
               <v-card>
                 <v-card-title class="text-no-wrap">BAF</v-card-title>
@@ -141,6 +149,9 @@
             </v-fade-transition>
           </v-col>
         </v-row>
+        <v-fade-transition>
+          <Summary v-if="Summary" :Plots="Plots" :Species="SpeciesObj"></Summary>
+        </v-fade-transition>
       </v-container>
     </v-content>
 
@@ -154,6 +165,7 @@
 import axios from "axios";
 import Login from "./components/Login";
 import Table from "./components/Table";
+import Summary from "./components/Summary";
 
 const Api = {
   Base: "https://tree-con.herokuapp.com/api/v1/",
@@ -168,12 +180,13 @@ export default {
   name: "TreeCon",
   components: {
     Login,
-    Table
+    Table,
+    Summary
   },
   data: () => ({
     drawer: false,
     Loading: false,
-    SelectionArray: [0, 5, 10, 15, 20],
+    SelectionArray: [...Array(15).keys()].map(x => x * 5),
     Internet: navigator.onLine,
     ShowOnline: true,
     LoggedOn: false,
@@ -182,6 +195,7 @@ export default {
     Plots: [{}],
     SelectedPlot: "",
     SelectedPlotData: "",
+    Summary: false,
     Species: {},
     Config: {
       headers: {
@@ -302,6 +316,13 @@ export default {
       } else {
         return null;
       }
+    },
+    SpeciesObj: function() {
+      var res = {};
+      this.Species.forEach(s => {
+        res[s.id] = s.species_name;
+      });
+      return res;
     }
   },
   methods: {
@@ -491,6 +512,12 @@ export default {
         this.Locations = this.$localStorage.get("LocalLocation");
         this.SelectedLocation = this.$localStorage.get("LocalLocation");
       }
+    },
+    ShowSummary: function() {
+      this.SelectedPlot = null;
+      this.SelectedPlotData = null;
+      this.Summary = true;
+      this.drawer = false;
     }
   }
 };
