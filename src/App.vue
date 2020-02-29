@@ -435,6 +435,7 @@ export default {
       this.SelectedPlotData = Plot.PlotData;
       this.SelectedPlot = Plot;
       this.drawer = false;
+      this.Summary = false;
     },
     AddPlot: function() {
       let UnusedId = 1;
