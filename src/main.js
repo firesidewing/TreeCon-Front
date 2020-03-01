@@ -4,6 +4,13 @@ import vuetify from './plugins/vuetify';
 import './registerServiceWorker'
 import VueLocalStorage from 'vue-localstorage'
 import '@mdi/font/css/materialdesignicons.css'
+import * as Sentry from '@sentry/browser';
+import * as Integrations from '@sentry/integrations';
+
+Sentry.init({
+  dsn: 'https://751eefde68d040bb860ca5bf083db014@sentry.io/3308001',
+  integrations: [new Integrations.Vue({ Vue, attachProps: true })],
+});
 
 Vue.use(VueLocalStorage)
 
