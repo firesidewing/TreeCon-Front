@@ -15,16 +15,26 @@
             <v-icon>mdi-delete</v-icon>
           </v-btn>
         </v-list-item>
-        <v-list-item link class="my-5">
-          <v-list-item-action @click="ShowSummary">
-            <v-icon>mdi-view-dashboard</v-icon>
-          </v-list-item-action>
-          <v-list-item-content @click="ShowSummary">
-            <v-list-item-title>Summary</v-list-item-title>
-          </v-list-item-content>
-        </v-list-item>
       </v-list>
       <template v-slot:append>
+        <v-list v-if="SelectedLocation">
+          <v-list-item link class="my-5">
+            <v-list-item-action @click="ShowLoss">
+              <v-icon>mdi-percent-outline</v-icon>
+            </v-list-item-action>
+            <v-list-item-content @click="ShowLoss">
+              <v-list-item-title>Loss Factors</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+          <v-list-item link>
+            <v-list-item-action @click="ShowSummary">
+              <v-icon>mdi-view-dashboard</v-icon>
+            </v-list-item-action>
+            <v-list-item-content @click="ShowSummary">
+              <v-list-item-title>Summary</v-list-item-title>
+            </v-list-item-content>
+          </v-list-item>
+        </v-list>
         <div class="pa-2 my-5" v-if="SelectedLocation">
           <v-btn block @click.stop="AddPlot" color="secondary">Add Plot</v-btn>
         </div>
@@ -59,7 +69,7 @@
     <v-content>
       <v-container fluid>
         <v-row v-if="SelectedLocation">
-          <v-col sm="3" md="2" lg="2" v-if="SelectedLocation && !Summary">
+          <v-col sm="3" md="2" lg="2" v-if="SelectedLocation && !Summary && !Loss">
             <v-fade-transition>
               <v-card>
                 <v-card-title class="text-no-wrap">BAF</v-card-title>
@@ -152,6 +162,9 @@
         <v-fade-transition>
           <Summary v-if="Summary" :Plots="Plots" :Species="SpeciesObj"></Summary>
         </v-fade-transition>
+        <v-fade-transition>
+          <LossFactor v-if="Loss" v-model="Species" :Config="Config" :Internet="Internet"></LossFactor>
+        </v-fade-transition>
       </v-container>
     </v-content>
 
@@ -166,6 +179,7 @@ import axios from "axios";
 import Login from "./components/Login";
 import Table from "./components/Table";
 import Summary from "./components/Summary";
+import LossFactor from "./components/LossFactor";
 
 const Api = {
   Base: "https://tree-con.herokuapp.com/api/v1/",
@@ -181,7 +195,8 @@ export default {
   components: {
     Login,
     Table,
-    Summary
+    Summary,
+    LossFactor
   },
   data: () => ({
     drawer: false,
@@ -196,6 +211,7 @@ export default {
     SelectedPlot: "",
     SelectedPlotData: "",
     Summary: false,
+    Loss: false,
     Species: {},
     Config: {
       headers: {
@@ -518,6 +534,14 @@ export default {
       this.SelectedPlot = null;
       this.SelectedPlotData = null;
       this.Summary = true;
+      this.Loss = false;
+      this.drawer = false;
+    },
+    ShowLoss: function() {
+      this.SelectedPlot = null;
+      this.SelectedPlotData = null;
+      this.Summary = false;
+      this.Loss = true;
       this.drawer = false;
     }
   }
@@ -525,5 +549,5 @@ export default {
 </script>
 
 <style lang="sass">
-  @import '../node_modules/roboto-fontface/css/roboto/roboto-fontface.css'
+@import '../node_modules/roboto-fontface/css/roboto/roboto-fontface.css'
 </style>

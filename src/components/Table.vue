@@ -33,6 +33,15 @@
           </v-edit-dialog>
         </template>
 
+        <template v-slot:item.alive="props">
+          <v-edit-dialog @save="save(props.item)" @close="save(props.item)" @cancel="cancel">
+            {{ props.item.alive ? "Yes": "No" }}
+            <template v-slot:input>
+              <v-checkbox v-model="props.item.alive" label="Alive" color="success"></v-checkbox>
+            </template>
+          </v-edit-dialog>
+        </template>
+
         <template v-slot:item.dbh="props">
           <v-edit-dialog @save="save(props.item)" @close="save(props.item)" @cancel="cancel">
             {{ props.item.dbh }}
@@ -77,6 +86,7 @@ export default {
       { text: "Tree", value: "tree" },
       { text: "Species", value: "tree_species" },
       { text: "BD", value: "blowdown" },
+      { text: "Alive", value: "alive" },
       { text: "DBH", value: "dbh" },
       { text: "Height", value: "height" },
       { text: "Merch m^3", value: "net_piece_size" },
@@ -151,7 +161,8 @@ export default {
         height: 0,
         gross_piece_size: 0.0,
         net_piece_size: 0.0,
-        blowdown: false
+        blowdown: false,
+        alive: true
       };
 
       if (v.Internet) {
